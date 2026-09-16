@@ -8,10 +8,23 @@ const FORMATS = [
 ];
 
 const METHOD = [
-  ["Comprendre", "Prendre de la hauteur sans perdre le lien avec votre réalité."],
-  ["Expérimenter", "Manipuler, tester et confronter les possibilités aux usages."],
-  ["Construire", "Créer des cas, outils ou méthodes directement utiles."],
-  ["Passer à l’action", "Choisir les prochains pas et les inscrire dans le temps."],
+  { title: "Comprendre", text: "Mettre des mots communs sur ce qui change pour votre métier et votre organisation.", result: "Des repères partagés" },
+  { title: "Expérimenter", text: "Tester l’IA sur vos situations, observer ce qu’elle améliore et ce qu’elle fragilise.", result: "Des usages éprouvés" },
+  { title: "Construire", text: "Transformer les apprentissages en cas d’usage, en méthode ou en première réalisation.", result: "Un résultat adapté" },
+  { title: "Décider", text: "Prioriser ce qui mérite d’être lancé, approfondi ou volontairement écarté.", result: "Des prochaines étapes claires" },
+];
+
+const PLACE_BENEFITS = [
+  { number: "01", title: "Rendre le groupe disponible", text: "Un environnement calme pour sortir des interruptions et retrouver une attention collective." },
+  { number: "02", title: "Faire circuler les idées", text: "Une table commune, des espaces intérieurs et extérieurs pour alterner travail, recul et échanges." },
+  { number: "03", title: "Prolonger les conversations", text: "Repas partagés, temps informels et hébergement possible pour laisser mûrir les décisions." },
+];
+
+const OUTCOMES = [
+  { number: "01", title: "Une lecture partagée", text: "Un vocabulaire commun et une compréhension plus juste des possibilités comme des limites de l’IA." },
+  { number: "02", title: "Des cas d’usage éprouvés", text: "Des pistes confrontées à vos métiers, vos données, vos contraintes et votre niveau de maturité." },
+  { number: "03", title: "Des choix assumés", text: "Ce qu’il faut lancer, approfondir, encadrer ou écarter — sans céder à l’effet de mode." },
+  { number: "04", title: "Une suite praticable", text: "Des actions hiérarchisées et, selon le format, une projection à 30, 60 et 90 jours." },
 ];
 
 function Mark() {
@@ -156,8 +169,12 @@ export default function App() {
       </section>
 
       <section className="method section-pad">
-        <div className="section-heading section-heading--split" data-reveal><p className="eyebrow eyebrow--dark">Le mouvement NEXIA</p><h2>De la curiosité<br />à quelque chose de concret.</h2></div>
-        <ol className="method-grid">{METHOD.map(([title, text], index) => <li key={title} data-reveal><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{text}</p></li>)}</ol>
+        <div className="method__heading" data-reveal>
+          <div><p className="eyebrow eyebrow--dark">Le mouvement NEXIA</p><h2>Une progression conçue pour produire des décisions.</h2></div>
+          <p>Nous ne séparons pas la compréhension de la pratique. Chaque étape transforme une question en observation, puis l’observation en choix utile pour la suite.</p>
+        </div>
+        <div className="method__trajectory" data-reveal><p><span>Votre point de départ</span>Des questions, des intuitions, parfois trop d’outils.</p><i aria-hidden="true">→</i><p><span>Le résultat recherché</span>Des usages testés, des priorités et une direction commune.</p></div>
+        <ol className="method-grid">{METHOD.map((item, index) => <li key={item.title} data-reveal><span className="method-grid__number">{String(index + 1).padStart(2, "0")}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><strong>{item.result}</strong></li>)}</ol>
       </section>
 
       <section className="immersion" id="immersion">
@@ -171,8 +188,15 @@ export default function App() {
       </section>
 
       <section className="place section-pad">
-        <div className="place__intro" data-reveal><p className="eyebrow eyebrow--dark">Le lieu fait partie de l’expérience</p><h2>Du calme. De la lumière.<br />Et du temps pour penser.</h2></div>
-        <div className="place__gallery"><figure className="place__large"><img src="/images/place-house-pool.jpg" alt="Maison en pierre et espace extérieur du lieu NEXIA" loading="lazy" /></figure><figure className="place__small"><img src="/images/grounds-pond.jpg" alt="Étang et nature autour du lieu d’immersion" loading="lazy" /></figure><p data-reveal>Intérieurs accueillants, table partagée, espaces extérieurs et hébergement possible : le décor ne se contente pas d’accueillir l’expérience, il lui donne son rythme.</p></div>
+        <div className="place__intro" data-reveal>
+          <p className="eyebrow eyebrow--dark">Le lieu fait partie de l’expérience</p>
+          <div><h2>Sortir du quotidien pour travailler sur l’essentiel.</h2><p>Le cadre n’est pas un décor. Il crée les conditions pour ralentir, parler autrement et traiter les sujets que les réunions ordinaires repoussent.</p></div>
+        </div>
+        <div className="place__gallery">
+          <figure className="place__large"><img src="/images/place-house-pool.jpg" alt="Maison en pierre et espace extérieur du lieu NEXIA" loading="lazy" /><figcaption>Un lieu à part, choisi pour la qualité de l’attention qu’il permet.</figcaption></figure>
+          <figure className="place__small"><img src="/images/grounds-pond.jpg" alt="Étang et nature autour du lieu d’immersion" loading="lazy" /></figure>
+          <div className="place__benefits">{PLACE_BENEFITS.map((item) => <article key={item.number} data-reveal><span>{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div>
+        </div>
       </section>
 
       <section className="live" id="live">
@@ -193,13 +217,16 @@ export default function App() {
         </div>
       </section>
 
-      <section className="horizon section-pad">
-        <p className="eyebrow">NEXIA, aujourd’hui et demain</p>
-        <div className="horizon__grid"><p><strong>Immersion</strong><span>Les expériences intensives et résidentielles.</span></p><p><strong>Academy</strong><span>Les programmes pédagogiques premium.</span></p><p><strong>Business</strong><span>L’expérience NEXIA au sein de votre organisation.</span></p><p className="horizon__future"><strong>Campus</strong><span>Une ambition à plus long terme pour un lieu permanent consacré à l’IA.</span></p></div>
+      <section className="outcomes section-pad">
+        <div className="outcomes__heading" data-reveal><p className="eyebrow">Ce qui reste après l’expérience</p><div><h2>Pas seulement un bon moment.<br />Des repères pour la suite.</h2><p>Selon le format choisi, NEXIA produit des résultats directement mobilisables par le groupe et par l’organisation.</p></div></div>
+        <div className="outcomes__grid">{OUTCOMES.map((item) => <article key={item.number} data-reveal><span>{item.number}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
       </section>
 
       <section className="contact section-pad" id="contact">
-        <div className="contact__heading" data-reveal><p className="eyebrow">La prochaine étape</p><h2>Et si votre prochaine étape commençait ici ?</h2><p>Parlez-nous de votre contexte. Nous imaginerons ensemble le format, le lieu et le rythme les plus justes.</p></div>
+        <div className="contact__heading" data-reveal>
+          <div><p className="eyebrow">La prochaine étape</p><h2>Parlons de ce que vous voulez faire bouger.</h2></div>
+          <div className="contact__promise"><p>Vous nous expliquez votre contexte, votre groupe et le résultat recherché. Nous vous répondons avec un format, un rythme et un cadre adaptés — pas avec une offre standard.</p><ol><li><span>01</span>Votre demande</li><li><span>02</span>Un échange de cadrage</li><li><span>03</span>Une proposition NEXIA</li></ol></div>
+        </div>
         <ContactForm />
       </section>
 
