@@ -49,14 +49,19 @@ Netlify exécute automatiquement `npm run build` et publie `dist/` à chaque pus
 
 Le formulaire `contact` est détecté au moment du build par Netlify. Les soumissions sont visibles dans l’espace Netlify du site.
 
+### Récupérer les messages
+
+Les demandes sont enregistrées dans le tableau de bord Netlify :
+
+`https://app.netlify.com/projects/nexia-experience/forms`
+
+Ouvrir le formulaire `contact` pour consulter et exporter les soumissions. Aucune notification par email n’est encore configurée : l’adresse destinataire doit être choisie avant de l’activer dans **Project configuration → Notifications → Form submission notifications**.
+
 ## TODO avant ouverture officielle
 
-- fournir le nom complet, la biographie et le portrait de Patrick ;
-- fournir la biographie et le portrait de Norman Hubert ;
-- fournir une photographie du duo et/ou d’une conférence ;
 - compléter les mentions légales et les informations de l’éditeur ;
 - confirmer l’adresse ou la zone géographique à afficher, si souhaité ;
-- remplacer ou compléter les photographies du lieu au fil des prochains shootings ;
+- remplacer ou compléter les projections visuelles par les photographies d’un prochain shooting, si souhaité ;
 - configurer les notifications de formulaire vers l’adresse choisie ;
 - produire une image Open Graph dédiée si une carte de partage sur mesure est souhaitée.
 

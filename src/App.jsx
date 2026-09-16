@@ -128,7 +128,7 @@ export default function App() {
         <p className="intro__lead" data-reveal>Ce n’est pas une conférence de plus.<br />Ce n’est pas une formation comme les autres.</p>
         <div className="intro__aside" data-reveal>
           <span>01 — La promesse</span>
-          <p>NEXIA crée un temps privilégié pour comprendre, essayer, échanger et fabriquer. L’IA y devient une expérience professionnelle et humaine, reliée à vos enjeux — jamais un catalogue d’outils.</p>
+          <p>NEXIA crée un temps privilégié pour comprendre ce qui change, éprouver les outils sur le terrain et fabriquer une réponse qui vous appartient. L’IA y devient une expérience professionnelle et humaine — jamais un catalogue de recettes.</p>
           <a className="text-link" href="#contact">Imaginer mon format <Arrow /></a>
         </div>
       </section>
@@ -149,10 +149,10 @@ export default function App() {
       <section className="personalization">
         <div className="personalization__copy section-pad" data-reveal>
           <p className="eyebrow">Sur mesure, dès le départ</p><h2>Votre expérience commence avant notre rencontre.</h2>
-          <p>Votre métier, votre niveau, vos outils, vos questions et vos irritants dessinent le contenu. Un questionnaire, un échange préparatoire ou l’identification de cas réels nous permettent d’arriver avec un temps qui vous ressemble.</p>
+          <p>Votre métier, votre niveau, vos outils, vos questions et vos irritants dessinent le contenu. Un questionnaire, un échange préparatoire et l’identification de cas réels nous permettent d’arriver avec un temps qui vous ressemble — exigeant sur le fond, immédiatement mobilisable dans la pratique.</p>
           <ul><li>Vos situations, pas des cas génériques</li><li>Un rythme ajusté au groupe</li><li>Des réalisations utiles après la rencontre</li></ul>
         </div>
-        <figure className="personalization__image"><img src="/images/workshop-room.jpg" alt="Espace de travail préparé pour un atelier NEXIA" loading="lazy" /><figcaption>Un cadre préparé pour votre réalité.</figcaption></figure>
+        <figure className="personalization__image"><img src="/images/workshop-room-premium.jpg" alt="Salle de travail NEXIA préparée avec tables en bois, carnets et assises chaleureuses" loading="lazy" /><figcaption>Un cadre préparé pour votre réalité.</figcaption></figure>
       </section>
 
       <section className="method section-pad">
@@ -161,7 +161,7 @@ export default function App() {
       </section>
 
       <section className="immersion" id="immersion">
-        <div className="immersion__visual"><img src="/images/immersion-pond-table.jpg" alt="Table installée près de l’eau dans le lieu d’immersion NEXIA" loading="lazy" /><p>Deux jours<br />hors du quotidien</p></div>
+        <div className="immersion__visual"><img src="/images/immersion-pond-premium.jpg" alt="Table en bois préparée au bord de l’eau dans le lieu d’immersion NEXIA" loading="lazy" /><p>Deux jours<br />hors du quotidien</p></div>
         <div className="immersion__copy section-pad" data-reveal>
           <p className="eyebrow">NEXIA Immersion</p><h2>Changer de cadre pour changer de perspective.</h2>
           <p className="large-copy">Un petit groupe, un lieu à part, des temps de travail et des respirations. L’immersion donne de la place aux questions qui comptent et aux échanges que l’agenda ordinaire empêche.</p>
@@ -179,17 +179,17 @@ export default function App() {
         <div className="live__copy section-pad" data-reveal>
           <p className="eyebrow">NEXIA Live</p><h2>L’IA entre<br /><em>en scène.</em></h2>
           <p>Une conférence à deux voix où expertise, humour et mise en situation se répondent pour parler autrement de l’intelligence artificielle.</p>
-          <p>Norman et Patrick confrontent deux regards complémentaires : l’un éclaire, l’autre déplace le point de vue. Un dialogue vivant pour comprendre, mémoriser et questionner les idées reçues — sans transformer le propos en spectacle de stand-up.</p>
+          <p>Norman apporte les repères de la recherche et des systèmes humain‑IA. Patrick mobilise son expérience pédagogique, entrepreneuriale et son art du décalage. Leur dialogue rend les idées plus claires, plus mémorables et plus faciles à mettre en mouvement — sans transformer le propos en spectacle de stand-up.</p>
           <a className="button button--light" href="#contact">Imaginer votre événement <Arrow /></a>
         </div>
-        <div className="live__visual" aria-label="Emplacement réservé à une future photographie du duo Norman et Patrick"><div className="live__stage"><span>N</span><i>×</i><span>P</span></div><p><strong>TODO</strong> — Photographie du duo / conférence à fournir</p></div>
+        <figure className="live__visual"><img src="/images/live-norman-patrick.jpg" alt="Norman Hubert et Patrick Martinez lors d’une conférence NEXIA à deux voix" loading="lazy" /><figcaption>Projection visuelle de l’expérience NEXIA Live</figcaption></figure>
       </section>
 
       <section className="hosts section-pad" id="apropos">
         <div className="section-heading section-heading--split" data-reveal><p className="eyebrow eyebrow--dark">Vos hôtes</p><h2>Deux regards.<br />Une expérience à construire.</h2></div>
         <div className="hosts__grid">
-          <article className="host-card" data-reveal><div className="host-card__portrait"><span>NH</span></div><div><p className="host-card__role">Co-fondateur</p><h3>Norman Hubert</h3><p className="todo"><strong>TODO</strong> — Biographie et portrait à fournir.</p></div></article>
-          <article className="host-card" data-reveal><div className="host-card__portrait"><span>P</span></div><div><p className="host-card__role">Co-fondateur</p><h3>Patrick</h3><p className="todo"><strong>TODO</strong> — Nom complet, biographie et portrait à fournir.</p></div></article>
+          <article className="host-card" data-reveal><div className="host-card__portrait host-card__portrait--norman"><img src="/images/live-norman-patrick.jpg" alt="Norman Hubert" loading="lazy" /></div><div><p className="host-card__role">Co-fondateur · Recherche & usages</p><h3>Norman Hubert</h3><p className="host-card__bio">Doctorant en sciences de gestion et du management et enseignant à l’Université Paris‑Panthéon‑Assas, Norman étudie les transformations du travail liées à l’IA générative et les nouvelles collaborations humain‑IA. Chez NEXIA, il apporte les repères, la méthode et l’exigence de vérification.</p><a className="text-link" href="https://www.linkedin.com/in/norman-hubert/" target="_blank" rel="noreferrer">Profil LinkedIn <span aria-hidden="true">↗</span></a></div></article>
+          <article className="host-card" data-reveal><div className="host-card__portrait host-card__portrait--patrick"><img src="/images/live-norman-patrick.jpg" alt="Patrick Martinez" loading="lazy" /></div><div><p className="host-card__role">Co-fondateur · Pédagogie & expérience</p><h3>Patrick Martinez</h3><p className="host-card__bio">Formateur indépendant depuis plus de dix ans, Patrick intervient en création et gestion d’entreprise, stratégie financière, négociation et entrepreneuriat. Certifié Coach Manager, il apporte à NEXIA l’écoute, la mise en mouvement et une expérience pédagogique profondément ancrée dans le terrain.</p><a className="text-link" href="https://www.linkedin.com/in/patrick-martinez-121a1291/" target="_blank" rel="noreferrer">Profil LinkedIn <span aria-hidden="true">↗</span></a></div></article>
         </div>
       </section>
 
