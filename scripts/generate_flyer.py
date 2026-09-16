@@ -1,12 +1,12 @@
+from io import BytesIO
 from pathlib import Path
 
 from PIL import Image, ImageEnhance
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode.qr import QrCodeWidget
 from reportlab.graphics.shapes import Drawing
-from reportlab.lib.colors import Color, HexColor
-from reportlab.lib.enums import TA_LEFT
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.colors import HexColor
+from reportlab.lib.pagesizes import A5
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
@@ -16,15 +16,18 @@ from reportlab.platypus import Paragraph
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "output" / "pdf" / "nexia-flyer-prospection-a4.pdf"
-HERO = ROOT / "public" / "images" / "hero-stone-courtyard.jpg"
+OUTPUT = ROOT / "output" / "pdf" / "nexia-flyer-prospection-a5-recto-verso.pdf"
+IMAGES = ROOT / "public" / "images"
 
 INK = HexColor("#18221d")
-INK_SOFT = HexColor("#334138")
+FOREST = HexColor("#334138")
+MOSS = HexColor("#687363")
 CREAM = HexColor("#f4eee2")
 PAPER = HexColor("#fbf8f1")
 EMBER = HexColor("#d68a4a")
-MUTED = HexColor("#6f746f")
+GOLD = HexColor("#d9b07b")
+MUTED = HexColor("#5f675f")
+WHITE = HexColor("#ffffff")
 
 
 def register_fonts():
@@ -33,24 +36,87 @@ def register_fonts():
     pdfmetrics.registerFont(TTFont("Georgia-Italic", "/System/Library/Fonts/Supplemental/Georgia Italic.ttf"))
 
 
-def draw_cover(c, image_path, x, y, width, height, focus_x=0.5, focus_y=0.5, brightness=1.0):
-    source = Image.open(image_path).convert("RGB")
+def prepared_image(path, brightness=1.0, saturation=1.0):
+    source = Image.open(path).convert("RGB")
     if brightness != 1.0:
         source = ImageEnhance.Brightness(source).enhance(brightness)
-    image = ImageReader(source)
+    if saturation != 1.0:
+        source = ImageEnhance.Color(source).enhance(saturation)
+    source.thumbnail((1800, 1800), Image.Resampling.LANCZOS)
+    buffer = BytesIO()
+    source.save(buffer, format="JPEG", quality=90, optimize=True)
+    buffer.seek(0)
+    return ImageReader(buffer)
+
+
+def cover_geometry(image, width, height, focus_x=0.5, focus_y=0.5):
     image_width, image_height = image.getSize()
     scale = max(width / image_width, height / image_height)
     drawn_width = image_width * scale
     drawn_height = image_height * scale
-    image_x = x - (drawn_width - width) * focus_x
-    image_y = y - (drawn_height - height) * focus_y
+    image_x = -(drawn_width - width) * focus_x
+    image_y = -(drawn_height - height) * focus_y
+    return image_x, image_y, drawn_width, drawn_height
 
+
+def draw_cover(c, path, x, y, width, height, focus_x=0.5, focus_y=0.5, radius=0, brightness=1.0, saturation=1.0):
+    image = prepared_image(path, brightness, saturation)
+    image_x, image_y, drawn_width, drawn_height = cover_geometry(image, width, height, focus_x, focus_y)
     c.saveState()
     clip = c.beginPath()
-    clip.rect(x, y, width, height)
+    if radius:
+        clip.roundRect(x, y, width, height, radius)
+    else:
+        clip.rect(x, y, width, height)
     c.clipPath(clip, stroke=0, fill=0)
-    c.drawImage(image, image_x, image_y, drawn_width, drawn_height, mask="auto")
+    c.drawImage(image, x + image_x, y + image_y, drawn_width, drawn_height, mask="auto")
     c.restoreState()
+
+
+def draw_circle_image(c, path, x, y, diameter, focus_x=0.5, focus_y=0.5, brightness=1.0):
+    image = prepared_image(path, brightness)
+    image_x, image_y, drawn_width, drawn_height = cover_geometry(image, diameter, diameter, focus_x, focus_y)
+    c.saveState()
+    clip = c.beginPath()
+    clip.circle(x + diameter / 2, y + diameter / 2, diameter / 2)
+    c.clipPath(clip, stroke=0, fill=0)
+    c.drawImage(image, x + image_x, y + image_y, drawn_width, drawn_height, mask="auto")
+    c.restoreState()
+    c.setStrokeColor(WHITE)
+    c.setLineWidth(3)
+    c.circle(x + diameter / 2, y + diameter / 2, diameter / 2, fill=0, stroke=1)
+
+
+def brush_banner(c, x, y, width, height, color):
+    c.setFillColor(color)
+    path = c.beginPath()
+    path.moveTo(x + 2, y + 5)
+    path.lineTo(x + 10, y + 1)
+    path.lineTo(x + width - 8, y + 3)
+    path.lineTo(x + width, y + 9)
+    path.lineTo(x + width - 5, y + height - 3)
+    path.lineTo(x + width - 18, y + height)
+    path.lineTo(x + 7, y + height - 2)
+    path.lineTo(x, y + height - 8)
+    path.close()
+    c.drawPath(path, fill=1, stroke=0)
+    c.setStrokeColor(color)
+    c.setLineWidth(2.2)
+    c.line(x + 6, y - 2, x + width - 16, y)
+    c.line(x + 14, y + height + 2, x + width - 7, y + height + 1)
+
+
+def logo(c, x, y, size=13, dark=False):
+    first = INK if dark else WHITE
+    c.setFont("Helvetica-Bold", size)
+    c.setFillColor(first)
+    c.drawString(x, y, "NE")
+    offset = c.stringWidth("NE", "Helvetica-Bold", size)
+    c.setFillColor(EMBER)
+    c.drawString(x + offset + 1, y, "X")
+    offset += c.stringWidth("X", "Helvetica-Bold", size) + 2
+    c.setFillColor(first)
+    c.drawString(x + offset, y, "IA")
 
 
 def paragraph(c, text, x, y_top, width, style):
@@ -70,139 +136,183 @@ def draw_qr(c, value, x, y, size):
     renderPDF.draw(drawing, c, x, y)
 
 
+def footer(c, page_width):
+    c.setFillColor(INK)
+    c.rect(0, 0, page_width, 18, fill=1, stroke=0)
+    c.setFillColor(GOLD)
+    c.setFont("Helvetica-Bold", 5.7)
+    c.drawString(22, 6.5, "NEXIA-EXPERIENCE.NETLIFY.APP")
+    c.setFillColor(WHITE)
+    c.drawRightString(page_width - 22, 6.5, "NORMAN HUBERT + PATRICK MARTINEZ")
+
+
+def draw_front(c, page_width, page_height):
+    c.setFillColor(PAPER)
+    c.rect(0, 0, page_width, page_height, fill=1, stroke=0)
+
+    hero_height = 274
+    hero_y = page_height - hero_height
+    draw_cover(c, IMAGES / "hero-stone-courtyard.jpg", 0, hero_y, page_width, hero_height, focus_y=0.48, brightness=0.64, saturation=1.05)
+    c.setFillColor(INK)
+    c.rect(0, page_height - 54, page_width, 54, fill=1, stroke=0)
+    logo(c, 24, page_height - 35, 15)
+    c.setFillColor(CREAM)
+    c.setFont("Helvetica-Bold", 6.3)
+    c.drawRightString(page_width - 24, page_height - 34, "DIRIGEANTS - CODIR - ÉQUIPES")
+
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 25)
+    c.drawString(24, page_height - 96, "FAIRE VIVRE")
+    brush_banner(c, 20, page_height - 149, 292, 42, FOREST)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 26)
+    c.drawString(31, page_height - 139, "L’IA. VRAIMENT.")
+    brush_banner(c, 27, page_height - 177, 173, 21, EMBER)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(39, page_height - 171, "COMPRENDRE. TESTER. DÉCIDER.")
+
+    draw_circle_image(c, IMAGES / "live-norman-patrick.jpg", page_width - 139, hero_y - 35, 112, focus_x=0.5, focus_y=0.42, brightness=0.94)
+
+    intro_style = ParagraphStyle("front-intro", fontName="Helvetica", fontSize=8.7, leading=12.6, textColor=INK)
+    paragraph(c, "Quelques heures, une journée ou deux jours pour comprendre ce qui change, expérimenter sur vos cas réels et construire une réponse qui vous appartient.", 24, hero_y - 16, 238, intro_style)
+
+    brush_banner(c, 22, 215, 236, 24, INK)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 8.2)
+    c.drawString(34, 223, "CE QUE VOUS VIVEZ AVEC NEXIA")
+
+    experiences = [
+        (FOREST, "01", "COMPRENDRE", "Des repères communs sur les possibilités et les limites de l’IA."),
+        (EMBER, "02", "EXPÉRIMENTER", "Des outils confrontés à vos métiers, vos pratiques et vos contraintes."),
+        (GOLD, "03", "CONSTRUIRE", "Un cas d’usage, une méthode ou une première réalisation adaptée."),
+        (MOSS, "04", "DÉCIDER", "Des priorités claires pour lancer, approfondir ou écarter."),
+    ]
+    bullet_style = ParagraphStyle("bullet", fontName="Helvetica", fontSize=6.6, leading=9.1, textColor=MUTED)
+    y = 187
+    for color, number, title, text in experiences:
+        c.setFillColor(color)
+        c.circle(37, y + 6, 13, fill=1, stroke=0)
+        c.setFillColor(WHITE if color != GOLD else INK)
+        c.setFont("Helvetica-Bold", 6.8)
+        c.drawCentredString(37, y + 4, number)
+        c.setFillColor(INK)
+        c.setFont("Helvetica-Bold", 7.4)
+        c.drawString(58, y + 11, title)
+        paragraph(c, text, 58, y + 6, 212, bullet_style)
+        y -= 37
+
+    brush_banner(c, 284, 77, 113, 118, FOREST)
+    c.setFillColor(WHITE)
+    c.setFont("Georgia-Italic", 10.5)
+    c.drawCentredString(340.5, 175, "Scannez pour")
+    c.drawCentredString(340.5, 162, "découvrir NEXIA")
+    c.setFillColor(PAPER)
+    c.roundRect(308, 88, 68, 64, 3, fill=1, stroke=0)
+    draw_qr(c, "https://nexia-experience.netlify.app", 313, 93, 58)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 6.2)
+    c.drawCentredString(342, 82, "LE SITE ET LES FORMATS")
+
+    c.setFillColor(INK)
+    c.setFont("Georgia-Bold", 15)
+    c.drawString(24, 48, "Une expérience professionnelle")
+    c.drawString(24, 31, "et humaine de l’intelligence artificielle.")
+    footer(c, page_width)
+
+
+def draw_back(c, page_width, page_height):
+    c.setFillColor(PAPER)
+    c.rect(0, 0, page_width, page_height, fill=1, stroke=0)
+
+    logo(c, 24, page_height - 34, 14, dark=True)
+    c.setFillColor(MUTED)
+    c.setFont("Helvetica-Bold", 5.8)
+    c.drawRightString(page_width - 24, page_height - 33, "EXPÉRIENCES D’INTELLIGENCE ARTIFICIELLE")
+
+    c.setFillColor(INK)
+    c.setFont("Helvetica-Bold", 24)
+    c.drawString(23, page_height - 76, "QUATRE FAÇONS")
+    brush_banner(c, 20, page_height - 126, 333, 39, FOREST)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 24)
+    c.drawString(32, page_height - 117, "DE VIVRE NEXIA")
+    brush_banner(c, 233, page_height - 151, 160, 19, EMBER)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 8.2)
+    c.drawCentredString(313, page_height - 145, "À VOTRE RYTHME, SUR VOS SUJETS")
+
+    back_intro = ParagraphStyle("back-intro", fontName="Helvetica-Bold", fontSize=7.8, leading=11.2, textColor=INK)
+    paragraph(c, "Le bon format est celui qui permet à votre groupe de comprendre, d’essayer et de repartir avec une direction commune.", 24, 432, 355, back_intro)
+
+    c.setFillColor(WHITE)
+    c.roundRect(20, 282, 240, 126, 8, fill=1, stroke=0)
+    draw_cover(c, IMAGES / "live-norman-patrick.jpg", 24, 286, 232, 118, focus_x=0.5, focus_y=0.47, radius=6, brightness=0.98)
+    draw_circle_image(c, IMAGES / "immersion-pond-premium.jpg", 276, 288, 116, focus_x=0.54, focus_y=0.66, brightness=1.02)
+    c.setFillColor(INK)
+    c.setFont("Helvetica-Bold", 5.8)
+    c.drawString(24, 272, "EXPERTISE, PÉDAGOGIE, MISE EN SITUATION ET TEMPS DE RECUL")
+
+    brush_banner(c, 20, 241, 179, 23, INK)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(31, 249, "CHOISISSEZ VOTRE FORMAT")
+
+    formats = [
+        ("01", "UNE DEMI-JOURNÉE", "Ouvrir le sujet et mettre une équipe en mouvement."),
+        ("02", "UNE JOURNÉE", "Prendre du recul, tester et construire sur des cas réels."),
+        ("03", "DEUX JOURS - IMMERSION", "Un petit groupe, un lieu à part et le temps d’aller plus loin."),
+        ("04", "SUR SCÈNE - LIVE", "Une conférence à deux voix, claire, vivante et mémorable."),
+    ]
+    small_style = ParagraphStyle("format-copy", fontName="Helvetica", fontSize=5.9, leading=7.5, textColor=MUTED)
+    y = 210
+    for index, (number, title, text) in enumerate(formats):
+        color = [FOREST, EMBER, GOLD, MOSS][index]
+        c.setFillColor(color)
+        c.roundRect(24, y - 1, 27, 27, 4, fill=1, stroke=0)
+        c.setFillColor(WHITE if index != 2 else INK)
+        c.setFont("Helvetica-Bold", 6.5)
+        c.drawCentredString(37.5, y + 8, number)
+        c.setFillColor(INK)
+        c.setFont("Helvetica-Bold", 7.2)
+        c.drawString(62, y + 14, title)
+        paragraph(c, text, 62, y + 8, 330, small_style)
+        y -= 38
+
+    brush_banner(c, 20, 61, 164, 24, FOREST)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 7.8)
+    c.drawString(31, 69, "CE QUI RESTE APRÈS")
+    c.setFillColor(INK)
+    c.setFont("Georgia-Bold", 11)
+    c.drawString(24, 43, "Des repères. Des usages testés. Des choix.")
+    c.setFillColor(MUTED)
+    c.setFont("Helvetica", 6.2)
+    c.drawString(24, 30, "Selon le format : une suite praticable et une projection à 30, 60 et 90 jours.")
+
+    c.setFillColor(INK)
+    c.setFont("Helvetica-Bold", 6.6)
+    c.drawRightString(page_width - 24, 70, "PARLONS DE VOTRE PROJET")
+    c.setFillColor(EMBER)
+    c.setFont("Georgia-Italic", 10.5)
+    c.drawRightString(page_width - 24, 52, "normanhubert@gmail.com")
+    c.setFillColor(MUTED)
+    c.setFont("Helvetica-Bold", 6)
+    c.drawRightString(page_width - 24, 36, "NEXIA-EXPERIENCE.NETLIFY.APP")
+    footer(c, page_width)
+
+
 def build():
     register_fonts()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    page_width, page_height = A4
-    c = canvas.Canvas(str(OUTPUT), pagesize=A4, pageCompression=1)
-    c.setTitle("NEXIA - Flyer prospection")
+    page_width, page_height = A5
+    c = canvas.Canvas(str(OUTPUT), pagesize=A5, pageCompression=1)
+    c.setTitle("NEXIA - Flyer prospection recto-verso")
     c.setAuthor("NEXIA - Norman Hubert et Patrick Martinez")
     c.setSubject("Expériences immersives en intelligence artificielle")
-
-    # Background and photographic opening.
-    c.setFillColor(CREAM)
-    c.rect(0, 0, page_width, page_height, fill=1, stroke=0)
-    hero_height = 350
-    hero_y = page_height - hero_height
-    draw_cover(c, HERO, 0, hero_y, page_width, hero_height, focus_x=0.5, focus_y=0.52, brightness=0.55)
-
-    margin = 42
-    c.setFillColor(PAPER)
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(margin, page_height - 42, "NE")
-    ne_width = c.stringWidth("NE", "Helvetica-Bold", 13)
-    c.setFillColor(EMBER)
-    c.drawString(margin + ne_width + 2.1, page_height - 42, "X")
-    x_width = c.stringWidth("X", "Helvetica-Bold", 13)
-    c.setFillColor(PAPER)
-    c.drawString(margin + ne_width + x_width + 4.2, page_height - 42, "IA")
-
-    c.setFont("Helvetica-Bold", 6.5)
-    c.drawRightString(page_width - margin, page_height - 42, "DIRIGEANTS  -  CODIR  -  ÉQUIPES")
-
-    c.setFillColor(PAPER)
-    c.setFont("Helvetica-Bold", 7.2)
-    c.drawString(margin, page_height - 96, "EXPÉRIENCES D’INTELLIGENCE ARTIFICIELLE")
-
-    c.setFont("Georgia", 40)
-    c.drawString(margin, page_height - 146, "Faire vivre l’IA.")
-    c.setFillColor(HexColor("#edb77f"))
-    c.setFont("Georgia-Italic", 45)
-    c.drawString(margin, page_height - 193, "Vraiment.")
-
-    hero_body = ParagraphStyle(
-        "hero-body",
-        fontName="Helvetica",
-        fontSize=10.8,
-        leading=16,
-        textColor=PAPER,
-        alignment=TA_LEFT,
-    )
-    paragraph(
-        c,
-        "Quelques heures, une journée ou deux jours hors du quotidien pour "
-        "<b>comprendre, expérimenter et construire</b> votre propre manière de travailler avec l’intelligence artificielle.",
-        margin,
-        page_height - 226,
-        430,
-        hero_body,
-    )
-
-    # Formats section.
-    c.setFillColor(INK)
-    c.setFont("Helvetica-Bold", 7)
-    c.drawString(margin, 458, "QUATRE FORMATS, UN MÊME OBJECTIF : VOUS FAIRE AVANCER")
-
-    cards = [
-        ("01", "Une demi-journée", "Ouvrir le sujet et mettre une équipe en mouvement."),
-        ("02", "Une journée", "Tester, prendre du recul et construire sur vos cas réels."),
-        ("03", "Deux jours", "Vivre une immersion intensive dans un lieu à part."),
-        ("04", "Sur scène", "Faire de l’IA une conférence vivante et mémorable."),
-    ]
-    card_gap = 12
-    card_width = (page_width - 2 * margin - card_gap) / 2
-    card_height = 68
-    card_style = ParagraphStyle("card", fontName="Helvetica", fontSize=7.7, leading=11.2, textColor=MUTED)
-
-    for index, (number, title, body) in enumerate(cards):
-        column = index % 2
-        row = index // 2
-        x = margin + column * (card_width + card_gap)
-        y = 374 - row * (card_height + 11)
-        c.setFillColor(PAPER if index != 2 else HexColor("#d9b07b"))
-        c.roundRect(x, y, card_width, card_height, 3, fill=1, stroke=0)
-        c.setFillColor(EMBER if index != 2 else INK)
-        c.setFont("Helvetica-Bold", 6.4)
-        c.drawString(x + 14, y + card_height - 17, number)
-        c.setFillColor(INK)
-        c.setFont("Georgia-Bold", 13)
-        c.drawString(x + 38, y + card_height - 19, title)
-        paragraph(c, body, x + 38, y + card_height - 30, card_width - 52, card_style)
-
-    # Concrete outcomes band.
-    band_y = 136
-    band_height = 105
-    c.setFillColor(INK_SOFT)
-    c.rect(0, band_y, page_width, band_height, fill=1, stroke=0)
-    c.setFillColor(HexColor("#edb77f"))
-    c.setFont("Helvetica-Bold", 6.6)
-    c.drawString(margin, band_y + 78, "CE QUI RESTE APRÈS L’EXPÉRIENCE")
-    c.setFillColor(PAPER)
-    c.setFont("Georgia", 22)
-    c.drawString(margin, band_y + 44, "Comprendre. Tester. Décider.")
-    outcome_style = ParagraphStyle("outcome", fontName="Helvetica", fontSize=8.2, leading=12.5, textColor=Color(1, 1, 1, alpha=0.72))
-    paragraph(
-        c,
-        "Des repères partagés, des usages éprouvés et des prochaines étapes claires - sans céder à l’effet de mode.",
-        332,
-        band_y + 74,
-        220,
-        outcome_style,
-    )
-
-    # Contact area and QR code.
-    c.setFillColor(INK)
-    c.setFont("Georgia", 18)
-    c.drawString(margin, 104, "Parlons de ce que vous voulez faire bouger.")
-    c.setFont("Helvetica", 7.5)
-    c.setFillColor(MUTED)
-    c.drawString(margin, 82, "Norman Hubert + Patrick Martinez  -  Une proposition construite pour votre contexte")
-    c.setFillColor(INK)
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(margin, 55, "NEXIA-EXPERIENCE.NETLIFY.APP")
-    c.setFillColor(EMBER)
-    c.circle(margin + 218, 57, 2.2, fill=1, stroke=0)
-    c.setFillColor(MUTED)
-    c.setFont("Helvetica", 6.8)
-    c.drawString(margin + 229, 55, "Échangeons sur votre prochain format")
-
-    qr_size = 72
-    qr_x = page_width - margin - qr_size
-    qr_y = 39
-    c.setFillColor(PAPER)
-    c.roundRect(qr_x - 6, qr_y - 6, qr_size + 12, qr_size + 12, 4, fill=1, stroke=0)
-    draw_qr(c, "https://nexia-experience.netlify.app", qr_x, qr_y, qr_size)
-
+    draw_front(c, page_width, page_height)
+    c.showPage()
+    draw_back(c, page_width, page_height)
     c.showPage()
     c.save()
     print(OUTPUT)
