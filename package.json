@@ -1,0 +1,21 @@
+{
+  "name": "nexia-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site vitrine de NEXIA — expériences d'intelligence artificielle pour les entreprises",
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
