@@ -12,6 +12,9 @@ Première version du site vitrine de NEXIA, conçu comme une landing page édito
 
 Le projet évite volontairement les dépendances d’interface superflues.
 
+- Site public : https://nexia-experience.netlify.app
+- Dépôt GitHub : https://github.com/normanhubert-creator/nexia
+
 ## Lancer le site
 
 ```bash
@@ -42,7 +45,7 @@ Les sources des photographies utilisées sont documentées dans `public/images/P
 
 ## Déploiement
 
-Netlify exécute automatiquement `npm run build` et publie `dist/` à chaque push sur la branche `main` du dépôt GitHub.
+Netlify exécute automatiquement `npm run build` et publie `dist/` à chaque push sur la branche `main` du dépôt GitHub `normanhubert-creator/nexia`.
 
 Le formulaire `contact` est détecté au moment du build par Netlify. Les soumissions sont visibles dans l’espace Netlify du site.
 
